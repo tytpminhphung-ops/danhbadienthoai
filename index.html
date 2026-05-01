@@ -492,7 +492,13 @@
                         
                         if(row) {
                             $('#modal-name').text(row['Họ và tên'] || 'Chưa cập nhật');
-                            $('#modal-role').text(row['Chức vụ'] || 'Chưa cập nhật');
+                            
+                            if (row['Chức vụ'] && row['Chức vụ'].trim() !== '') {
+                                $('#modal-role').text(row['Chức vụ']).show();
+                            } else {
+                                $('#modal-role').hide();
+                            }
+
                             $('#modal-title').text(row['Chức danh'] || 'Chưa cập nhật');
                             $('#modal-dept').text(row['Khoa, Phòng, Điểm Y tế'] || 'Chưa cập nhật');
                             
