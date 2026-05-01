@@ -351,6 +351,53 @@
         </div>
     </div>
 
+    <!-- Modal Chi Tiết -->
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 15px; overflow: hidden;">
+                <div class="modal-header text-white" style="background-color: var(--primary-color);">
+                    <h5 class="modal-title fw-bold" id="detailModalLabel"><i class="bi bi-person-badge me-2"></i>Thông tin chi tiết</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex justify-content-center align-items-center rounded-circle" style="width: 80px; height: 80px; background-color: rgba(5, 150, 105, 0.1); color: var(--primary-color); font-size: 2.5rem;">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <h4 class="mt-3 fw-bold text-dark" id="modal-name"></h4>
+                        <span class="badge rounded-pill px-3 py-2 mt-1" style="background-color: var(--primary-light); font-size: 0.85rem;" id="modal-role"></span>
+                    </div>
+                    
+                    <div class="card border-0 bg-light rounded-3 p-3 shadow-sm">
+                        <div class="mb-3 border-bottom pb-2">
+                            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Chức danh</small>
+                            <div class="fw-medium text-dark mt-1" id="modal-title"></div>
+                        </div>
+                        <div class="mb-3 border-bottom pb-2">
+                            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Khoa / Phòng / Điểm Y tế</small>
+                            <div class="fw-medium text-dark mt-1" id="modal-dept"></div>
+                        </div>
+                        <div class="mb-3 border-bottom pb-2">
+                            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Điện thoại</small>
+                            <div class="mt-1">
+                                <a href="#" class="text-decoration-none fw-bold" style="color: var(--primary-color); font-size: 1.1rem;" id="modal-phone"><i class="bi bi-telephone-fill me-1"></i></a>
+                            </div>
+                        </div>
+                        <div class="mb-1">
+                            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Email</small>
+                            <div class="mt-1">
+                                <a href="#" class="text-decoration-none text-dark" id="modal-email"><i class="bi bi-envelope-fill me-1 text-muted"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <button type="button" class="btn btn-secondary px-4 rounded-pill fw-medium" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer>
         <p class="footer-text">&copy; 2026 PHÒNG HÀNH CHÍNH, TÀI CHÍNH, NHÂN SỰ</p>
@@ -380,7 +427,17 @@
                         data: results.data,
                         columns: [
                             { data: 'Stt', defaultContent: '', className: 'text-center align-middle' },
-                            { data: 'Họ và tên', defaultContent: '', className: 'fw-medium text-dark align-middle' },
+                            { 
+                                data: 'Họ và tên', 
+                                defaultContent: '', 
+                                className: 'fw-medium text-dark align-middle',
+                                render: function (data, type, row) {
+                                    if (type === 'display' && data) {
+                                        return `<a href="javascript:void(0)" class="name-link text-decoration-none fw-bold" style="color: var(--primary-dark); border-bottom: 1px dashed var(--primary-light); transition: all 0.2s;"><i class="bi bi-info-circle-fill me-1 text-muted" style="font-size: 0.85rem;"></i>${data}</a>`;
+                                    }
+                                    return data;
+                                }
+                            },
                             { data: 'Chức vụ', defaultContent: '', className: 'align-middle' },
                             { data: 'Chức danh', defaultContent: '', className: 'align-middle' },
                             { data: 'Khoa, Phòng, Điểm Y tế', defaultContent: '', className: 'align-middle' },
@@ -421,6 +478,42 @@
                         autoWidth: false,
                         responsive: true,
                         dom: '<"row align-items-center mb-3"<"col-md-6"l><"col-md-6"f>>rt<"row align-items-center mt-3"<"col-md-6"i><"col-md-6"p>>'
+                    });
+                    
+                    // Event listener for name click to show details
+                    $('#dataTable tbody').on('click', '.name-link', function () {
+                        let table = $('#dataTable').DataTable();
+                        let tr = $(this).closest('tr');
+                        // Handle responsive rows
+                        if (tr.hasClass('child')) {
+                            tr = tr.prev('.parent');
+                        }
+                        let row = table.row(tr).data();
+                        
+                        if(row) {
+                            $('#modal-name').text(row['Họ và tên'] || 'Chưa cập nhật');
+                            $('#modal-role').text(row['Chức vụ'] || 'Chưa cập nhật');
+                            $('#modal-title').text(row['Chức danh'] || 'Chưa cập nhật');
+                            $('#modal-dept').text(row['Khoa, Phòng, Điểm Y tế'] || 'Chưa cập nhật');
+                            
+                            let phone = row['Điện thoại'] || '';
+                            let cleanPhone = phone.replace(/[\s\.\-\,]/g, '');
+                            if(phone) {
+                                $('#modal-phone').text(phone).attr('href', 'tel:' + cleanPhone);
+                            } else {
+                                $('#modal-phone').text('Chưa cập nhật').removeAttr('href');
+                            }
+                            
+                            let email = row['Email'] || '';
+                            if(email) {
+                                $('#modal-email').text(email).attr('href', 'mailto:' + email);
+                            } else {
+                                $('#modal-email').text('Chưa cập nhật').removeAttr('href');
+                            }
+                            
+                            let detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+                            detailModal.show();
+                        }
                     });
                     
                     // Add slight delay for animation effect
